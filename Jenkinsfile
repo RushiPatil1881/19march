@@ -29,22 +29,35 @@ pipeline {
 
         stage('Push to ECR') {
             steps {
-                sh '''
-                aws ecr get-login-password --region $AWS_REGION | \
-                docker login --username AWS --password-stdin $ECR_REPO
+                // Inject AWS credentials securely
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'aws-creds'  // Jenkins AWS credential ID
+                ]]) {
+                    sh '''
+                    aws ecr get-login-password --region $AWS_REGION | \
+                    docker login --username AWS --password-stdin $ECR_REPO
 
-                docker push $ECR_REPO:$IMAGE_TAG
-                '''
+                    docker push $ECR_REPO:$IMAGE_TAG
+                    '''
+                }
             }
         }
 
         stage('Deploy to EKS') {
             steps {
-                sh '''
-                sed -i "s|339772065903.dkr.ecr.ap-south-1.amazonaws.com/eks-devops-app|$ECR_REPO:$IMAGE_TAG|g" deployment.yaml
-                kubectl apply -f deployment.yaml
-                kubectl apply -f service.yaml
-                '''
+                // Use the same AWS credentials for kubectl
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'aws-crd'
+                ]]) {
+                    sh '''
+                    aws eks update-kubeconfig --region $AWS_REGION --name <cluster-name>
+                    sed -i "s|339772065903.dkr.ecr.ap-south-1.amazonaws.com/eks-devops-app|$ECR_REPO:$IMAGE_TAG|g" deployment.yaml
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
+                    '''
+                }
             }
         }
     }
