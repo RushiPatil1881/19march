@@ -32,7 +32,7 @@ pipeline {
                 // Inject AWS credentials securely
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding', 
-                    credentialsId: 'aws-creds'  // Jenkins AWS credential ID
+                    credentialsId: 'aws-crd'  // Jenkins AWS credential ID
                 ]]) {
                     sh '''
                     aws ecr get-login-password --region $AWS_REGION | \
