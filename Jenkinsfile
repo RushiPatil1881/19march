@@ -33,10 +33,8 @@ pipeline {
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-crd'
                 ]]) {
-                    sh """
-aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-docker push $ECR_REPO:$IMAGE_TAG
-"""
+                    sh """aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+docker push $ECR_REPO:$IMAGE_TAG"""
                 }
             }
         }
@@ -47,13 +45,11 @@ docker push $ECR_REPO:$IMAGE_TAG
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-crd'
                 ]]) {
-                    // Each command in its own line starting at the first column — no blank lines
-                    sh """
-aws eks update-kubeconfig --region $AWS_REGION --name <cluster-name>
+                    // Each command starts immediately at column 1, no leading blank line
+                    sh """aws eks update-kubeconfig --region $AWS_REGION --name <cluster-name>
 sed -i 's|339772065903.dkr.ecr.ap-south-1.amazonaws.com/eks-devops-app|$ECR_REPO:$IMAGE_TAG|g' deployment.yaml
 kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
-"""
+kubectl apply -f service.yaml"""
                 }
             }
         }
