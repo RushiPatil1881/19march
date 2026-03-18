@@ -5,7 +5,7 @@ pipeline {
         AWS_REGION = 'ap-south-1'
         ECR_REPO = '339772065903.dkr.ecr.ap-south-1.amazonaws.com/eks-devops-app'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        CLUSTER_NAME = '<cluster-name>' // replace with your EKS cluster name
+        CLUSTER_NAME = 'devops-cluster' // replace with your EKS cluster name
     }
 
     stages {
